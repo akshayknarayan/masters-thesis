@@ -1,0 +1,51 @@
+\begin{thebibliography}{1}
+
+\bibitem{copa}
+Venkat Arun and Hari Balakrishnan.
+\newblock {Copa: Congestion Control Combining Objective Optimization with
+  Window Adjustments}.
+\newblock In {\em {NSDI}}, 2018.
+
+\bibitem{dpdk}
+{DPDK}.
+\newblock \url{http://dpdk.org/}.
+
+\bibitem{nimbus}
+Prateesh Goyal, Akshay Narayan, Frank Cangialosi, Deepti. Raghavan, Srinivas
+  Narayana, Mohammad Alizadeh, and Hari Balakrishnan.
+\newblock {Elasticity Detection: A Building Block for Delay-Sensitive
+  Congestion Control}.
+\newblock {\em ArXiv e-prints}, February 2018.
+
+\bibitem{mtcp}
+EunYoung Jeong, Shinae Woo, Muhammad Jamshed, Haewon Jeong, Sunghwan Ihm,
+  Dongsu Han, and KyoungSoo Park.
+\newblock {mTCP: a Highly Scalable User-level TCP Stack for Multicore Systems}.
+\newblock In {\em NSDI}, 2014.
+
+\bibitem{quic}
+Adam Langley, Alistair Riddoch, Alyssa Wilk, Antonio Vicente, Charles Krasic,
+  Dan Zhang, Fan Yang, Fedor Kouranov, Ian Swett, Janardhan Iyengar, Jeff
+  Bailey, Jeremy Dorfman, Jim Roskind, Joanna Kulik, Patrik Westin, Raman
+  Tenneti, Robbie Shade, Ryan Hamilton, Victor Vasiliev, Wan-Teh Chang, and
+  Zhongyi Shi.
+\newblock {The QUIC Transport Protocol: Design and Internet-Scale Deployment}.
+\newblock In {\em SIGCOMM}, 2017.
+
+\bibitem{smartnic}
+Netronome.
+\newblock {Agilio LX SmartNICs}.
+\newblock \url{https://www.netronome.com/products/agilio-lx/}.
+\newblock [Online, Retrieved July 28, 2017].
+
+\bibitem{netmap}
+Luigi Rizzo.
+\newblock {netmap: A Novel Framework for Fast Packet I/O}.
+\newblock In {\em USENIX ATC}, 2012.
+
+\bibitem{remy}
+Keith Winstein and Hari Balakrishnan.
+\newblock {TCP ex Machina: Computer-Generated Congestion Control}.
+\newblock In {\em SIGCOMM}, 2013.
+
+\end{thebibliography}

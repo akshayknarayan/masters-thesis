@@ -1,0 +1,7 @@
+\chapter{CCP API Capabilities}
+In this chapter, we discuss whether the CCP API can provide exactly what the QUIC pluggable congestion control interface provides.
+As evidenced by the congestion window comparison graphs in Chapter~\ref{performance}, QUIC's Reno and Cubic vary slightly from the CCP versions of these algorithms.
+One source of difference is that QUIC implements slightly different algorithms: in particular, QUIC implements hybrid slow start, instead of regular slow start.
+Another source of difference is that QUIC implements a variant of mulTCP for the cubic congestion control algorithm, most notably emulating two connections rather than one.
+We try to implement exactly the same algorithm in QUIC through CCP, and redo some of the congestion window evolution experiments, to see how close of a match we can get through CCP.
+\section{Hybrid Slow Start}
