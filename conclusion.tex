@@ -1,0 +1,20 @@
+\chapter{Conclusion and Future Work}
+While congestion control has been an active area of research for over thirty years, we see innovations in algorithms every year.
+The recently proposed \textit{Congestion Control Plane} architecture presents a new congestion control API that can accelerate the pace of development, enable the same algorithm to automatically be run on various datapaths, and provide new capabilities for new types of algorithms and aggregate traffic control.
+Our results reveal that our initial CCP implementation inside the QUIC toy server allows CCP based congestion control algorithms to behave similarly to their native QUIC counterparts.
+
+One direction of future work includes further evaluation of the CCP QUIC datapath.
+Understanding the CPU utilization patterns of CCP and QUIC will likely give insight of how to improve the CCP QUIC scalability results.
+We would like to evaluate the QUIC CCP datapath in \textit{real} network settings, to see how CCP affects end to end performance when QUIC serves pages to a client over HTTPS.
+This includes seeing how various congestion control algorithms, run on top of QUIC via the CCP, affects video performance on QUIC.
+More generally, we could introduce CCP support for customizing the congestion control for specific applications such as video conferencing and video streaming.
+
+CCP enables algorithms to make decisions off of the ACK clock, so developers now have a choice of where to place algorithm functionality.
+They could embed functionality both in datapath programs run per ACK as well as in the userspace CCP agent, run at developer specified times.
+Section~\ref{sec:algorithms:remy} discussed an initial implementation of Remy in CCP, tested over Linux.
+We must fully evaluate all the deployment questions mentioned in Section~\ref{sec:algorithms:remy:impl}, including how best to partition the algorithm functionality between the datapath and userspace.
+We can implement more algorithms on top of CCP, including PCC~\cite{pcc}, and Indigo~\cite{indigo}, a new machine learning congestion control scheme.
+
+We hope to implement CCP support on hardware datapaths, such as SmartNICs, to see whether the requirements for a datapath to support a wide variet of congestion control algorithms mentioned in Section~\ref{sec:impl:alg_interface} hold true for hardware datapaths.
+Finally, future work also includes a cluster based congestion manager, where CCP runs on a different machine from the datapath, to make congestion control decisions on behalf of multiple flows.
+

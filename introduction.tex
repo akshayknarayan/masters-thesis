@@ -1,46 +1,91 @@
 \chapter{Introduction}
-Congestion control, a class of algorithms that decide when endpoints should send each segment of data, has been active area of development since the the 1980s.
-Research has flourished recently, due to new applications and network technologies.
-This research both includes new algorithms, such as Remy~\cite{remy}, Copa~\cite{copa}, as well as new \textit{datapaths}, a term referring to any module that allows applications to interface with the network; i.e., send and receive packets.
+Research on congestion control has not only remained vibrant since the 1980s, but has flourished in recent years as new applications, network technologies, and workload patterns have been emerging at a rapid rate. Figure~\ref{fig:cctimeline} shows a time-line of innovations in this area.
 
-\par Currently, congestion control is tightly integrated into the datapath itself - a natural place to make decisions about how fast to send data is in the datapath.
-Example datapaths include the Linux kernel, which implements various congestion control algorithms, kernel bypass methods, such as mTCP/DPDK ~\cite{dpdk,mtcp,netmap}, specialized Network Interface Cards (``Smart NICS''~\cite{smartnic}).
-One recent datapath is QUIC~\cite{quic}, a UDP based transport, currently used in Google chrome and YouTube connections.
-However, congestion control algorithms do not \textit{need} to be implemented directly in the datapath.
-In fact, implementing congestion control in an off-datapath agent, that communicates with the datapath at regular intervals, would even ease congestion control development.
+At its core, a congestion control protocol determines when each segment of data must be sent. Because a natural place to make this decision is within the transport layer, congestion control today is tightly woven into kernel TCP software and runs independently for each TCP connection.
 
-\par If algorithms were implemented through some common off datapath agent, any datapath that supports this agent could run the resulting algorithms.
-This would introduce ``write once, run anywhere'' behavior - where developers could write congestion control algorithms once, through this agent, and run them automatically on multiple datapaths.
-The recently proposed Congestion Control Plane (CCP)~\cite{ccp} architecture presents a design for a possible off datapath congestion control agent.
-This thesis explores what are the core responsibilities of datapaths to support various congestion control algorithms.
-We design a datapath API for datapaths to support CCP, and we use QUIC as a case study.
+This design has three shortcomings. First, many modern proposals use techniques such as Bayesian forecasts (Sprout~\cite{sprout}), offline or online learning (Remy~\cite{remy}, PCC~\cite{pcc}, PCC-Vivace~\cite{pcc-vivace}, Indigo~\cite{pantheon}), or signal processing with Fourier transforms (Nimbus~\cite{nimbus}) that are difficult, if not impossible, to implement in a kernel lacking useful libraries for the required calculations. For example, computing the cube root function in Linux's Cubic implementation requires using a table lookup and a Newton-Raphson iteration instead of a simple function call. Moreover, to meet tight performance constraints, in-kernel congestion control methods have largely been restricted to simple window or rate arithmetic.
 
-\section{Motivation for a Congestion Control Plane}
-While various new congestion control algorithms have emerged, as well as many new datapaths, new datapaths tend to lack support for various congestion control algorithms.
-There are many subtle nuances in ensuring the correctness of behavior and performance of a new algorithm on a \textit{single} datapath.
-With an architecture like CCP's, congestion control researchers can focus on the core algorithm logic without worrying about  deploying the algorithm on various datapaths.
-CCP enables faster congestion control development; with a simple userspace API to implement a new algorithm, developers can iterate on mistakes faster.
-It enables new capabilities - with a single off datapath agent controlling congestion avoidance for multiple flows at the same endpoint, CCP could additionally provide an aggregator that controls multiple flows at once.
-Though this is not a problem for the QUIC datapath, which is in userspace, the Linux kernel datapath is limited in computation in that algorithms cannot perform floating point operations.
-Algorithms implemented in CCP can use complex calculations such as fast fourier transforms~\cite{nimbus} or neural networks~\cite{indigo}.
-Finally, CCP enables developers to automatically run the same algorithm on different datapaths with minimal effort.
+%However, this tight coupling is not fundamental to congestion control; rather,
+%it imposes an artificial restriction on algorithms to restrict their
+%computations to a single packet inter-arrival time lest they slow down the
+%flow.
+%Research on congestion control is flourishing, and newly proposed algorithms lacking kernel %implementations, such as
+%PCC-Vivace~\cite{pcc-vivace}, Nimbus~\cite{nimbus}, Remy~\cite{remy}, and
+%Sprout~\cite{sprout}, 
+%all involve calculations that are cumbersome to perform in
+%he kernel and challenging to engineer to meet tight performance
+%requirements.
+%For example, Nimbus uses Fast Fourier Transforms to determine the amount and
+%nature of the cross-traffic on the bottleneck link.
 
-\section{Why QUIC?}
-We explore building CCP datapaths with QUIC as a case study.
-\section{Designing CCP Datapaths}
-Congestion control algorithms, at their core, decide when to transmit each segment of data by using measurements, or \textit{congestion signals} taken after sending previous segments of data.
-For congestion control to be off the datapath, the datapath must summarize information about these congestion signals - such as RTT, packets lost and received, explicit congestion notification (ECN) markings, sending and receive rate, and provide it to the off datapath agent at certain intervals.
-The datapath must also expose an interface to control sending rates - namely an interface to set the congestion window or pacing rate for the connection.
+Second, the kernel TCP stack is but one example of a {\em datapath}, the term we use for any module that provides data transmission and reception interfaces between higher-layer applications and lower-layer network hardware. Recently, new datapaths have emerged, including user-space protocols atop UDP (e.g., QUIC~\cite{quic}, WebRTC~\cite{webrtc}, Mosh~\cite{mosh}), kernel-bypass methods (e.g., mTCP/DPDK~\cite{dpdk,mtcp,netmap}), RDMA~\cite{dcqcn}, multi-path TCP (MPTCP)~\cite{mptcp}, and specialized Network Interface Cards (``SmartNICs''~\cite{smartnic}). This trend suggests that future applications will use datapaths different from traditional kernel-supported TCP connections.
 
-\section{Contributions}
-This thesis makes the following contributions:
+\begin{figure}[t]
+\centering
+    \includegraphics[width=\columnwidth]{img/cc-timeline-nocongsig}
+    \vspace{-20pt}
+    %\caption{Congestion control algorithms over the years.}
+    \caption{As link characteristics diversify, developers have developed a battery of congestion control algorithms, from the ``long-fat pipe'' schemes of the mid-2000s~\cite{westwood, veno, htcp, hybla} to purely delay-based~\cite{vegas, fasttcp, ledbat, nv, timely} and hybrid loss-delay~\cite{illinois, compound} schemes, and more recent proposals~\cite{pcc, remy, sprout, bbr, copa, abc}.}\label{fig:cctimeline}
+    \vspace{-16pt}
+\end{figure}
+
+New datapaths offer limited choices for congestion control because implementing these algorithms correctly takes considerable time and effort. 
+We believe this significantly hinders experimentation and innovation both in the datapaths and the congestion control algorithms running over them.
+For instance, the set of currently available algorithms in mTCP~\cite{mtcp}, a TCP implementation on DPDK, is limited to a variant of Reno. 
+QUIC, despite Google's imposing engineering resources, does not have implementations of several algorithms that have existed in the Linux kernel for many years.  
+We expect this situation to worsen with the emergence of new hardware accelerators and programmable network interface cards (NICs) because high-speed hardware designers tend to forego programming convenience for performance. 
+%The difficulty is not the volume of code, but rather is the subtle correctness and performance issues in various algorithms that require expertise to understand and resolve.
+
+Third, tying congestion control tightly to the datapath makes it hard to provide new capabilities, such as aggregating congestion information across flows that share common bottlenecks, as proposed in the Congestion Manager project~\cite{cm}. 
+
+%This paper starts from the observation that congestion control algorithms need not be implemented in the datapath. 
+
+\smallskip
+If, instead, the datapath encapsulated the information available to it about {\em congestion signals} like packet round-trip times (RTT), receptions, losses, ECN, etc., and periodically provided this information to an off-datapath module, then congestion control algorithms could run in the context of that module. 
+By exposing an analogous interface to control transmission parameters such as the window size, pacing rate, and transmission pattern, the datapath could transmit data according to the policies specified by the off-datapath congestion control algorithm. Of course, the datapath must be modified to expose
+such an interface, but this effort needs to be undertaken only once for each datapath.
+%, and does not grow with the number of congestion control algorithms.
+
+We use the term {\em Congestion Control Plane (CCP)} to refer to this off-datapath module. Running congestion control in the CCP offers the following benefits:
+\begin{enumerate}
+    \item {\bf Write-once, run-anywhere:} One can write a congestion control algorithm once and run it on any datapath that supports the specified interface. 
+    We describe several algorithms running on three datapaths: the Linux kernel, mTCP/DPDK, and QUIC, and show algorithms running for the first time on certain datapaths (e.g., Cubic on mTCP/DPDK and Copa on QUIC).
+    \item {\bf Higher pace of development:} With good abstractions,
+      a congestion control designer can focus on the algorithmic essentials
+      without worrying about the details and data structures of the
+      datapath. The resulting code is easier to read and maintain. In our implementation, congestion control algorithms in CCP are written in Rust or Python and run in user space. 
+    \item {\bf New capabilities:} CCP makes it easier to provide new
+      capabilities, such as aggregate control of multiple flows~\cite{cm}, and algorithms that require sophisticated computation (e.g., signal processing, machine learning, \etc) running in \userspace programming environments. 
+      %These algorithms are hard to write as window updates on incoming ACKs.
+      %All the benefits of a \userspace programming environment (libraries, debuggers, \etc) will be available to       developers.
+\end{enumerate}
+
+%\vspace{0.1in}
+\smallskip 
+This paper's contributions include:
+
 \begin{itemize}
-    \item Designing a common shared library, \libccp, that contains an API for datapaths to easily support CCP. \footnote{This portion of the work was done jointly with my collaborators on our CCP paper, to be published at SIGCOMM 2018.} This includes distilling the congestion control requirements for a datapath. \libccp is available at \url{https://github.mit.edu/nebula/libccp}
-    \item A case study of using \libccp to design a new CCP datapath inside QUIC, and an evaluation of the fidelity of this QUIC datapath: is the performance reasonable? Does the API give congestion control developers the same flexibility as the QUIC pluggable congestion control interface? This implementation is available at \url{https://github.mit.edu/nebula/ccp-quic}.
-    \item A comparison of various congestion control algorithms (new and old) running on both the Linux datapath and QUIC, through CCP. This includes various algorithms that have never been run over TCP or QUIC before, such as Remy, and Nimbus.
+\item An event-driven language to specify congestion control
+  algorithms. Algorithm developers specify congestion control behavior using
+  combinations of events and conditions, such as the receipt of an
+  ACK or a loss event, along with corresponding handlers to perform
+  simple computations directly in the datapath (\eg increment the window) or defer
+  complex logic to a \userspace component. We show how to implement several recently proposed algorithms and also congestion-manager aggregation. 
+
+\item A specification of datapath responsibilities. These include congestion
+  signals that a datapath should maintain (Table~\ref{tab:api}), as
+  well as a simple framework to execute directives from a CCP program. This
+  design enables ``write-once, run-anywhere'' protocols.
+
+%\item A demonstration of new capabilities enabled by CCP, including
+%   new congestion control algorithms and the implementation of an
+%  aggregate congestion controller acting on behalf of multiple flows.
+
+\item An evaluation of the fidelity of CCP relative to in-kernel
+  implementations under a variety of link conditions. Our CCP implementation
+  matches the performance of Linux kernel implementations at only a small
+  overhead (5\% higher CPU utilization in the worst case).
+%  Furthermore, we show it  is feasible to implement infrequent congestion control even in low-RTT, high
+  % bandwidth environments.
+
 \end{itemize}
-
-
-
-
-

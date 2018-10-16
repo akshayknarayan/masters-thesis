@@ -25,24 +25,44 @@
 %% Page Intentionally Left Blank'', use the ``leftblank'' option, as
 %% above.
 
-\documentclass[12pt,twoside]{mitthesis}
+\documentclass[12pt,vi,twoside]{mitthesis}
+
+\include{packages}
+
 \usepackage{lgrind}
 \usepackage{url}
 %% These have been added at the request of the MIT Libraries, because
 %% some PDF conversions mess up the ligatures.  -LB, 1/22/2014
 \usepackage{cmap}
 %\usepackage{lmodern}
-\usepackage{kpfonts}
-\usepackage[scaled=.8]{DejaVuSansMono}
+%\usepackage{kpfonts}
+\usepackage{times}
+\usepackage{listings}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{hhline,colortbl}
+\usepackage{amsmath}
+%\usepackage[scaled=.8]{DejaVuSansMono}
+\usepackage[scaled=.9]{inconsolata}
+\lstset{
+basicstyle=\ttfamily\small
+}
 \usepackage[T1]{fontenc}
 \usepackage{color}
-\usepackage{minted}
-\usepackage{graphicx}
 \usepackage{tcolorbox}
 \usepackage{etoolbox}
-\BeforeBeginEnvironment{minted}{\begin{tcolorbox}}%
-\AfterEndEnvironment{minted}{\end{tcolorbox}}%
-\graphicspath{ {images/} }
+\usepackage{verbatim}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{multirow}
+\newcommand{\home}{.}
+\makeatletter
+\AtBeginEnvironment{minted}{\dontdofcolorbox}
+\def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}}
+\makeatother
+
+%\BeforeBeginEnvironment{minted}{\begin{tcolorbox}}%
+%\AfterEndEnvironment{minted}{\end{tcolorbox}}%
 \pagestyle{plain}
 
 %% This bit allows you to either specify only the fil `p[es which you wish to
@@ -54,11 +74,7 @@
 % \def\all{all}
 % \ifx\files\all \typeout{Including all files.} \else \typeout{Including only \files.} \includeonly{\files} \fi
 
-\newcommand{\dr}[1]{{\color{magenta}DR: {#1}}}
-\newcommand{\ct}[1]{\texttt{{#1}}}
-\newcommand{\libccp}{\ct{libccp}}
 \begin{document}
-
 \include{cover}
 % Some departments (e.g. 5) require an additional signature page.  See
 % signature.tex for more information and uncomment the following line if
@@ -67,12 +83,14 @@
 \pagestyle{plain}
 \include{contents}
 \include{introduction}
-\include{relwork}
-\include{implementation}
-\include{performance}
-\include{ccpapi}
-\include{wora}
-\include{discussion}
+\input{related}
+\include{design}
+\input{writingalgs}
+\input{datapath}
+\input{capabilities}
+\include{eval}
+\input{concl}
+\input{reproduce}
 \include{biblio}
 \end{document}
 

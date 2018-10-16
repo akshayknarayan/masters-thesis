@@ -1,4 +1,16 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
+
+\bibitem{DCTCP}
+Mohammad Alizadeh, Albert Greenberg, David~A Maltz, Jitendra Padhye, Parveen
+  Patel, Balaji Prabhakar, Sudipta Sengupta, and Murari Sridharan.
+\newblock {Data Center TCP (DCTCP)}.
+\newblock In {\em SIGCOMM}, 2010.
+
+\bibitem{hotcocoa}
+Mina~Tahmasbi Arashloo, Monia Ghobadi, Jennifer Rexford, and David Walker.
+\newblock Hotcocoa: Hardware congestion control abstractions.
+\newblock In {\em Proceedings of the 16th ACM Workshop on Hot Topics in
+  Networks}, HotNets-XVI, pages 108--114, New York, NY, USA, 2017. ACM.
 
 \bibitem{copa}
 Venkat Arun and Hari Balakrishnan.
@@ -6,9 +18,117 @@ Venkat Arun and Hari Balakrishnan.
   Window Adjustments}.
 \newblock In {\em {NSDI}}, 2018.
 
+\bibitem{cm}
+Hari Balakrishnan, Hariharan~S. Rahul, and Srinivasan Seshan.
+\newblock {An Integrated Congestion Management Architecture for Internet
+  Hosts}.
+\newblock In {\em SIGCOMM}, 1999.
+
+\bibitem{ix}
+Adam Belay, George Prekas, Ana Klimovic, Samuel Grossman, Christos Kozyrakis,
+  and Edouard Bugnion.
+\newblock {IX: A Protected Dataplane Operating System for High Throughput and
+  Low Latency}.
+\newblock In {\em OSDI}, 2014.
+
+\bibitem{nv}
+L.~Brakmo.
+\newblock {TCP-NV: Congestion Avoidance for Data Centers}.
+\newblock {\em Linux Plumbers Conference}, 2010.
+
+\bibitem{vegas}
+L.~S. Brakmo, S.~W. O'Malley, and L.~L. Peterson.
+\newblock {TCP Vegas: New Techniques for Congestion Detection and Avoidance}.
+\newblock In {\em {SIGCOMM}}, 1994.
+
+\bibitem{tcpbpf}
+Lawrence Brakmo.
+\newblock {TCP-BPF: Programmatically tuning TCP behavior through BPF}.
+\newblock https://www.netdevconf.org/2.2/papers/brakmo-tcpbpf-talk.pdf.
+
+\bibitem{caida}
+CAIDA.
+\newblock {The CAIDA Anonymized Internet Traces 2016 Dataset - 2016-01-21}.
+\newblock \url{http://www.caida.org/data/passive/passive_2016_dataset.xml},
+  2016.
+
+\bibitem{hybla}
+Carlo Caini and Rosario Firrincieli.
+\newblock {TCP Hybla: a TCP enhancement for heterogeneous networks}.
+\newblock {\em International Journal of Satellite Communications and
+  Networking}, 22(5):547--566, 2004.
+
+\bibitem{bbr}
+Neal Cardwell, Yuchung Cheng, C.~Stephen Gunn, Soheil~Hassas Yeganeh, and Van
+  Jacobson.
+\newblock {BBR: Congestion-Based Congestion Control}.
+\newblock {\em ACM Queue}, 14(5):50:20--50:53, October 2016.
+
+\bibitem{bgi}
+Miguel Castro, Manuel Costa, Jean-Philippe Martin, Marcus Peinado, Periklis
+  Akritidis, Austin Donnelly, Paul Barham, and Richard Black.
+\newblock Fast byte-granularity software fault isolation.
+\newblock In {\em Proceedings of the ACM SIGOPS 22Nd Symposium on Operating
+  Systems Principles}, 2009.
+
+\bibitem{lwn-pluggable-tcp}
+Jonathan Corbet.
+\newblock {Pluggable congestion avoidance modules}.
+\newblock \url{https://lwn.net/Articles/128681/}, 2005.
+
+\bibitem{pcc}
+Mo~Dong, Qingxi Li, Doron Zarchy, Philip~Brighten Godfrey, and Michael
+  Schapira.
+\newblock {PCC: Re-architecting Congestion Control for Consistent High
+  Performance}.
+\newblock In {\em NSDI}, 2015.
+
+\bibitem{pcc-vivace}
+Mo~Dong, Tong Meng, D~Zarchy, E~Arslan, Y~Gilad, B~Godfrey, and M~Schapira.
+\newblock {PCC Vivace: Online-Learning Congestion Control}.
+\newblock In {\em NSDI}, 2018.
+
 \bibitem{dpdk}
 {DPDK}.
 \newblock \url{http://dpdk.org/}.
+
+\bibitem{ebpf}
+{Linux Socket Filtering aka Berkeley Packet Filter (BPF)}.
+\newblock \url{https://www.kernel.org/doc/Documentation/networking/filter.txt}.
+
+\bibitem{alpine}
+David Ely, Stefan Savage, and David Wetherall.
+\newblock Alpine: A user-level infrastructure for network protocol development.
+\newblock In {\em USITS}, volume~1, pages 15--15, 2001.
+
+\bibitem{exokernel}
+D.~R. Engler, M.~F. Kaashoek, and J.~O'Toole, Jr.
+\newblock {Exokernel: An Operating System Architecture for Application-level
+  Resource Management}.
+\newblock In {\em SOSP}, 1995.
+
+\bibitem{xfi}
+\'{U}lfar Erlingsson, Mart\'{\i}n Abadi, Michael Vrable, Mihai Budiu, and
+  George~C. Necula.
+\newblock Xfi: Software guards for system address spaces.
+\newblock In {\em Proceedings of the 7th Symposium on Operating Systems Design
+  and Implementation}, 2006.
+
+\bibitem{structuredstreams}
+Bryan Ford.
+\newblock {Structured Streams: A New Transport Abstraction}.
+\newblock In {\em SIGCOMM}, 2007.
+
+\bibitem{veno}
+Cheng~Peng Fu and Soung~C. Liew.
+\newblock {TCP Veno: TCP Enhancement for Transmission Over Wireless Access
+  Networks}.
+\newblock In {\em IEEE JSAC}, volume~21, 2003.
+
+\bibitem{abc}
+Prateesh Goyal, Mohammad Alizadeh, and Hari Balakrishnan.
+\newblock {Rethinking Congestion Control for Cellular Networks}.
+\newblock In {\em {HotNets}}, 2017.
 
 \bibitem{nimbus}
 Prateesh Goyal, Akshay Narayan, Frank Cangialosi, Deepti. Raghavan, Srinivas
@@ -17,11 +137,32 @@ Prateesh Goyal, Akshay Narayan, Frank Cangialosi, Deepti. Raghavan, Srinivas
   Congestion Control}.
 \newblock {\em ArXiv e-prints}, February 2018.
 
+\bibitem{icTCP}
+Haryadi~S. Gunawi, Andrea~C. Arpaci-Dusseau, and Remzi~H. Arpaci-Dusseau.
+\newblock {Deploying Safe User-level Network Services with icTCP}.
+\newblock In {\em OSDI}, 2004.
+
+\bibitem{cubic}
+Sangtae Ha, Injong Rhee, and Lisong Xu.
+\newblock {CUBIC: A New TCP-Friendly High-Speed TCP Variant}.
+\newblock {\em {ACM SIGOPS Operating System Review}}, 42(5):64--74, July 2008.
+
+\bibitem{newreno}
+J.~C. Hoe.
+\newblock {Improving the Start-up Behavior of a Congestion Control Scheme for
+  TCP}.
+\newblock In {\em {SIGCOMM}}, 1996.
+
 \bibitem{mtcp}
 EunYoung Jeong, Shinae Woo, Muhammad Jamshed, Haewon Jeong, Sunghwan Ihm,
   Dongsu Han, and KyoungSoo Park.
 \newblock {mTCP: a Highly Scalable User-level TCP Stack for Multicore Systems}.
 \newblock In {\em NSDI}, 2014.
+
+\bibitem{webrtc}
+Alan~B. Johnston and Daniel~C. Burnett.
+\newblock {\em {WebRTC: APIs and RTCWEB Protocols of the HTML5 Real-time Web}}.
+\newblock Digital Codex LLC, 2012.
 
 \bibitem{quic}
 Adam Langley, Alistair Riddoch, Alyssa Wilk, Antonio Vicente, Charles Krasic,
@@ -32,20 +173,156 @@ Adam Langley, Alistair Riddoch, Alyssa Wilk, Antonio Vicente, Charles Krasic,
 \newblock {The QUIC Transport Protocol: Design and Internet-Scale Deployment}.
 \newblock In {\em SIGCOMM}, 2017.
 
+\bibitem{htcp}
+DJ~Leith and R.~Shorten.
+\newblock {H-TCP Protocol for High-Speed Long Distance Networks}.
+\newblock In {\em PFLDNet}, 2004.
+
+\bibitem{illinois}
+Shao Liu, Tamer Ba{\c{s}}ar, and Ravi Srikant.
+\newblock {TCP-Illinois: A loss-and delay-based congestion control algorithm
+  for high-speed networks}.
+\newblock {\em Performance Evaluation}, 65(6):417--440, 2008.
+
+\bibitem{lxfi}
+Yandong Mao, Haogang Chen, Dong Zhou, Xi~Wang, Nickolai Zeldovich, and M~Frans
+  Kaashoek.
+\newblock {Software Fault Isolation with API Integrity and Multi-Principal
+  Modules}.
+\newblock In {\em SOSP}, 2011.
+
+\bibitem{westwood}
+S.~Mascolo, C.~Casetti, M.~Gerla, M.Y. Sanadidi, and R.~Wang.
+\newblock {TCP Westwood: Bandwidth Estimation for Enhanced Transport over
+  Wireless Links}.
+\newblock In {\em MobiCom}, 2001.
+
+\bibitem{timely}
+Radhika Mittal, Vinh~The Lam, Nandita Dukkipati, Emily Blem, Hassan Wassel,
+  Monia Ghobadi, Amin Vahdat, Yaogong Wang, David Wetherall, and David Zats.
+\newblock {TIMELY: RTT-based Congestion Control for the Datacenter}.
+\newblock In {\em SIGCOMM}, 2015.
+
+\bibitem{mahimahi}
+Ravi Netravali, Anirudh Sivaraman, Somak Das, Ameesh Goyal, Keith Winstein,
+  James Mickens, and Hari Balakrishnan.
+\newblock {Mahimahi: Accurate Record-and-Replay for HTTP}.
+\newblock In {\em USENIX ATC}, 2015.
+
 \bibitem{smartnic}
 Netronome.
 \newblock {Agilio LX SmartNICs}.
 \newblock \url{https://www.netronome.com/products/agilio-lx/}.
 \newblock [Online, Retrieved July 28, 2017].
 
+\bibitem{ns2}
+{The Network Simulator}.
+\newblock \url{https://www.isi.edu/nsnam/ns/}.
+
+\bibitem{arrakis2014}
+Simon Peter, Jialin Li, Irene Zhang, Dan R.~K. Ports, Doug Woos, Arvind
+  Krishnamurthy, Thomas Anderson, and Timothy Roscoe.
+\newblock {Arrakis: The Operating System is the Control Plane}.
+\newblock In {\em OSDI}, 2014.
+
+\bibitem{systrace}
+Niels Provos.
+\newblock Improving host security with system call policies.
+\newblock In {\em Proceedings of the 12th Usenix Security Symposium}, 2002.
+
+\bibitem{unix-domain}
+Dennis Ritchie.
+\newblock {A Stream Input-Output System}.
+\newblock {\em AT\&T Bell Laboratories Technical Journal}, 63, 1984.
+
 \bibitem{netmap}
 Luigi Rizzo.
 \newblock {netmap: A Novel Framework for Fast Packet I/O}.
 \newblock In {\em USENIX ATC}, 2012.
 
+\bibitem{rustfft}
+{rustfft}.
+\newblock \url{https://crates.io/crates/rustfft}.
+
+\bibitem{netlink}
+J~Salim, H.~Khosravi, A.~Kleen, and A.~Kuznetsov.
+\newblock {Linux Netlink as an IP Services Protocol}, 2003.
+\newblock RFC 3819, IETF.
+
+\bibitem{ledbat}
+S.~Shalunov, G.~Hazel, J.~Iyengar, and M~Kuehlewind.
+\newblock {Low Extra Delay Background Transport (LEDBAT)}, 2012.
+\newblock RFC 6817, IETF.
+
+\bibitem{compound}
+K.~Tan, J.~Song, Q.~Zhang, and M.~Sridharan.
+\newblock {A Compound {TCP} Approach for High-speed and Long Distance
+  Networks}.
+\newblock In {\em {INFOCOM}}, 2006.
+
+\bibitem{janus}
+I~Thomas, Ian Goldberg, David Wagner, Randi Thomas, and Eric Brewer.
+\newblock A secure environment for untrusted helper applications (confining the
+  wily hacker).
+\newblock In {\em Proceedings of the 6th conference on USENIX Security
+  Symposium}, 2001.
+
+\bibitem{iperf}
+Ajay Tirumala, Feng Qin, Jon Dugan, Jim Ferguson, and Kevin Gibbs.
+\newblock Iperf: The tcp/udp bandwidth measurement tool.
+\newblock {\em htt p://dast. nlanr. net/Projects}, 2005.
+
+\bibitem{sfi}
+Robert Wahbe, Steven Lucco, Thomas~E. Anderson, and Susan~L. Graham.
+\newblock Efficient software-based fault isolation.
+\newblock In {\em Proceedings of the Fourteenth ACM Symposium on Operating
+  Systems Principles}, 1993.
+
+\bibitem{fasttcp}
+D.X. Wei, C.~Jin, S.H. Low, and S.~Hegde.
+\newblock {FAST TCP: Motivation, Architecture, Algorithms, Performance}.
+\newblock {\em IEEE/ACM Trans. on Networking}, 14(6):1246--1259, 2006.
+
+\bibitem{mosh}
+Keith Winstein and Hari Balakrishnan.
+\newblock {Mosh: An Interactive Remote Shell for Mobile Clients}.
+\newblock In {\em {USENIX Annual Technical Conference}}, 2012.
+
 \bibitem{remy}
 Keith Winstein and Hari Balakrishnan.
 \newblock {TCP ex Machina: Computer-Generated Congestion Control}.
 \newblock In {\em SIGCOMM}, 2013.
+
+\bibitem{sprout}
+Keith Winstein, Anirudh Sivaraman, and Hari Balakrishnan.
+\newblock {Stochastic Forecasts Achieve High Throughput and Low Delay over
+  Cellular Networks}.
+\newblock In {\em NSDI}, 2013.
+
+\bibitem{mptcp}
+Damon Wischik, Costin Raiciu, Adam Greenhalgh, and Mark Handley.
+\newblock {Design, Implementation and Evaluation of Congestion Control for
+  Multipath TCP}.
+\newblock In {\em NSDI}, 2011.
+
+\bibitem{pantheon}
+Francis~Y Yan, Jestin Ma, Greg Hill, Deepti Raghavan, Riad~S Wahby, Philip
+  Levis, and Keith Winstein.
+\newblock {Pantheon: The Training Ground for Internet Congestion-Control
+  research}.
+\newblock In {\em USENIX ATC}, 2018.
+
+\bibitem{nacl}
+Bennet Yee, David Sehr, Greg Dardyk, Brad Chen, Robert Muth, Tavis Ormandy,
+  Shiki Okasaka, Neha Narula, and Nicholas Fullagar.
+\newblock Native client: A sandbox for portable, untrusted x86 native code.
+\newblock In {\em IEEE Symposium on Security and Privacy (Oakland'09)}, 2009.
+
+\bibitem{dcqcn}
+Yibo Zhu, Haggai Eran, Daniel Firestone, Chuanxiong Guo, Marina Lipshteyn,
+  Yehonatan Liron, Jitu Padhye, Shachar Raindel, Mohamad~Haj Yahia, and Ming
+  Zhang.
+\newblock {Congestion Control for Large-Scale RDMA Deployments}.
+\newblock In {\em SIGCOMM}, 2015.
 
 \end{thebibliography}

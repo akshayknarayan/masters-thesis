@@ -1,83 +1,178 @@
-%------------------------------------------INTRO TO PERFORMANCE SECTION -----------------------------
-\chapter{Performance of QUIC Datapath}
-In this section, we evaluate the fidelity and performance of the CCP datapath in QUIC by comparing the performance of CCP-QUIC and native QUIC implementations of TCP Cubic and TCP Reno.
-We find that CCP has reasonable performance in QUIC, for the emulated scenarios we test, until we reach the limits of the QUIC implementation itself.
-Unless otherwise specified, our evaluations are done using Linux 4.4.0 on an AWS Ec2 machine, with 8 vCPUs.
-Our implementation provides support for CCP in the QUIC toy server released publicly.
-However, the toy server is limited in performance; Google even mentions that they only use this implementation for integration testing purposes.
-We briefly discuss the limits of the QUIC toy server.
+\chapter{Evaluation of QUIC Datapath}
+\label{sec:performance}
+%------------------------------------------INTRO--------------------------------------------------
+This section provides an evaluaton of the CCP datapath in QUIC.
+We find that the QUIC Toy Server, released publicly, has limited performance; our implementation of CCP on QUIC faces these same limits.
+Our evaluation, therefore, focuses on \textit{fidelity}, or comparing the behavior of various congestion control algorithms implemented inside QUIC through CCP, with their native QUIC implementations, and comparing performance at lower bandwidths.
+Our fidelity comparison compares CCP and QUIC implementations of Cubic, Reno and BBR, which QUIC includes natively.
 
-To judge performance, our evalution focuses on four aspects:
-    \begin{enumerate}
-        \item{\textbf{Congestion Window Evolution:} Does the congestion window, for window based algorithms, look the same for the two algorithms throughout the connection, in various network conditions?}
-        \item{\textbf{Page Load Time:} QUIC is typically used to serve web pages. Here, does CCP affect how long it takes QUIC to serve files of varying sizes to a client?}
-        \item{\textbf{Throughout and Delay Profile Through Connection:} Through the connection, is the server seeing similar throughput and RTTs, for various network conditions?}
-        \item{\textbf{Scalability:} How many connections does CCP-QUIC scale to? However, this is limited by the performance of the QUIC toy server released publicly.}
-    \end{enumerate}
-
-We use the Mahimahi network emulator to obtain results. Mahimahi gives separate namespaces for a sender and receiver that run on the same host. Emulators are chained by nested elements that model link conditions, such as link shells, delay shells, and loss shells.
-Future work includes testing CCP-QUIC algorithms in real world settings.
-%-------------------------------------------------------------------------------------------------------
-%------------------------------------------PROBLEMS WITH QUIC TOY SERVER--------------------------------
-\section{Diagnosing Problems with QUIC Toy Server}
-
-\subsection*{Experiments}
-When deciding the range of emulation scenarios for the fidelity experiments, we first perform very basic experiments to explore the limitations of the QUIC toy server.
-Disregarding the CCP, we explore the bandwidth limitations of the server by seeing how high of a pacing rate or congestion window the server can sustain.
-We implement a simple congestion control algorithm within the QUIC pluggable congestion control interface that either sets the congestion window or pacing rate variable to a constant value at the beginning of the connection, and does not do anything else.
-Note that it does not matter if this simple sender is implemented in the native QUIC interface or through the CCP; the results are the same in either case.
-The experiments use the following range of emulation settings:
+Our evaluation discusses the following metrics for comparing CCP QUIC and native QUIC algorithms:
 \begin{itemize}
-    \item 12, 24, 48, 60, 96 MBPS uplink and downlink throughput
-    \item 20, 50, 100, 300 ms RTT
-    \item 1 BDP ($\textrm{RTT} * \textrm{bandwidth}$) of buffering with a droptail queue
+    \item{\textbf{Congestion Window Evolution: } For window based congestion control algorithms, does the window evolution look the same for a QUIC algorithm and  a CCP QUIC version of the same algorithm?}
+    \item{\textbf{Throughput and Delay Profile: } Does CCP affect the throughput and delay achieved by a client connecting to the QUIC server over a connection?}
+    \item{\textbf{Request Completion Time: } QUIC is typically used to serve web pages on an HTTP server. Does CCP affect the resulting final throughput of the connection, or the time it takes for the QUIC server to serve a file of a certain size?}
+    \item{\textbf{Different Network Connection: } Does the congestion window evolution, throughput, delay or page load time suffer in different network conditions such as cellular and lossy environments?}
+    \item{\textbf{Multiple Flows: } Does performance degrade of CCP QUIC when multiple flows are added? Do these flows share the link bandwidth fairly?}
 \end{itemize}
-For the congestion window tests, the sender sets the window to be equivalent to 2 BDP (the size of the buffer and the capacity of the link together).
-For the pacing rate tests, the sender sets the rate to be close but not the full throughput of the link.
-The client, running inside the mahimahi shell, sends a request to the server to transfer a page of a large size.
-\dr{Input table of increasing throughput and increasing the mm-throughput graphs}
 
-\subsection*{QUIC Performance Limitations Summary}
-As the throughput gets higher than around 48 MBPS, we see that QUIC cannot sustain a constant pacing rate or congestion window at the link capacity.
-Even at 24 MBPS, with a 20 ms RTT, there are drops in throughput every couple seconds.
-For all further experiments involving various congestion control algorithms, we choose to limit the bandwidth to up to 48 MBPS and the round trip time to 20 ms.
+Ultimately, we observe that CCP algorithms match their counterparts in QUIC, in terms of request completion times, throughput achieved, and delay achieved in various emulated scenarios with low overhead.
+The behavior (the congestion window evolution for Reno and Cubic, and throughput delay characteristics for BBR) matches for most cases, except  cellular and lossy links.
 
-%-------------------------------------------------------------------------------------------------------
-%------------------------------------------CONGESTION WINDOWS-------------------------------------------
-\section{Congestion Window Comparison}
+\section{Experimental Setup}
+\label{sec:performance:setup}
+To test various network settings, we use the Mahimahi network emulator~\cite{mahimahi}.
+Mahimahi gives separate namespaces for a sender and receiver that runs on the same host.
+Emulators are chained by nested elements that model link conditions, such as link shells, delay shells, and loss shells.
+Link conditions are modeled through trace files, that can specify settings such as a constant link rate or even a highly varying cellular link.
+QUIC, unlike TCP, lacks support for a socket like interface that would allow arbitrary applications to start sending traffic using a particular congestion control algorithm.
+Instead, the QUIC toy server and client can be configured to use any congestion control algorithm.
+All the experiments involve the QUIC toy client requesting a file transfer of a certain size from the QUIC toy server over a emulated Mahimahi or localhost link.
+The QUIC and CCP QUIC experiments are run on an AWS c4.xlarge Ec2 machine running Linux 4.4.0, with 4 vCPUs, unless otherwise specified.
+%The scripts for reproducing these experiments are located at \url{github.com/deeptir18/thesis_scripts}.
+We briefly discuss the performance limitations of the QUIC toy server, and then we perform various experiments that explore the fidelity of the CCP QUIC datapath.
 
-\subsection*{Experiment Setup}
-To judge fidelity between the CCP-QUIC algorithms and native QUIC algorithms, we examine two window based congestion control algorithms: TCP Cubic and TCP Reno.
-In the Linux kernel, tools such as \ct{tcp\_probe} log the congestion window and other statistics for every TCP connection.
-Since QUIC runs over UDP, no ready made modules exist to provide analysis for connections.
-For the fidelity experiments, we instrument QUIC with a window logger object that writes the congestion window of the connection roughly every round trip-time to a file, regardless of the congestion control algorithm used.
-We sweep the following linkspeeds for our experiments:
+%------------------------------------------INTRO--------------------------------------------------
+
+%------------------------------------------TOYSERVER--------------------------------------------------
+\section{Toy Server Performance Limitations}
+\label{sec:performance:limits}
+Before examining the differences between CCP QUIC and QUIC algorithms, we measure the limits of the QUIC toy server.
+To check the limits of the QUIC implementation, we focus both on the individual dynamics of a single flow in fixed link rate settings, as well as the achieved localhost throughput as the number of flows increase.
+
+\subsection{Sending Rate Limits}
+As the link rate gets higher, the performance of a single flow sending using either a constant congestion window or constant pacing rate, on a fixed bandwidth link, degrades slightly.
+In the following experiments, each link is emulated with a constant delay, bandwidth, and a droptail queue with 1 BDP (bandwidth-delay product) of buffering.
+For the constant congestion window tests, we set the window to be exactly 2 BDP, which is the amount of the data that can be sustained in the queue and link together.
+With the constant pacing rate experiments, we add a congestion window cap~\cite{bbrcode}:
+$$\textrm{link rate} * \textrm{minrtt} + 2*\textrm{mss}$$
+\input{\home/imagetex/performance/toy_server_const}
+As Figure~\ref{fig:quic-bad-single-flow} shows, as the link rate increases, QUIC cannot maintain the given congestion window or pacing rate with the proper queueing delay.\footnote{Many of the graphs shown are generated automatically through \ct{mm-graph}, a tool provided with Mahimahi that analyzes either the uplink or downlink logfile from a connection. We use the modified Mahimahi \ct{mm-graph} implementation from \url{github.com/fcangialosi/mahimahi}.}
+For all cases, the queueing delay average should be at most 1 RTT.
+The sender becomes bursty, and the queueing delay becomes higher and more variable.
+
+\subsection{Scalability}
+\input{\home/imagetex/performance/toy_server_scaling}
+The implementation, with or without CCP, does not scale well as the number of flows increases, in Figure ~\ref{fig:quic-tput-localhost}.
+This experiment measures the total achieved throughput on localhost as the number of flows increase.
+The toy client connects to the server over localhost, and measures the time taken to transfer a 100MB file.
+Here, for each number of flows, aggregate throughput is defined as the total amount of data transferred to all clients, divided by the time it took the server to finish the last request for the last client.
+This value should scale linearly as the number of clients increase; however, the QUIC toy server cannot sustain an increasing number of clients.
+As the number of flows increases, the total achieved throughput by all the clients decreases.
+In addition, for 1 flow, the total achieved throughput on localhost is around 180 mbps; the toy server comes nowhere close to saturating the localhost connection.
+
+CCP Reno and Cubic seem to impose some overhead, as they achieve less throughput than the QUIC toy server.
+Investigating this overhead remains an area of future work; this performance may be related to the CPU utilization profiles of QUIC alone, and CCP on top of QUIC.
+CCP mostly sees a decrease in aggregate throughput as well, though not as steep as QUIC's.
+
+Problems with the QUIC Toy server are well known in previous literature~\cite{quic-imc}.\footnote{After further communication with the Google team, we confirmed that the toy server is not optimized for performance. The release even states that this server is mainly used for integration test purposes.}
+This evaluation, as a result, focuses on the similarity of algorithm behavior between QUIC and CCP, as well as the expressiveness of the CCP API.
+
+%------------------------------------------TOYSERVER--------------------------------------------------
+
+%--------------------------------------------Congestion Window Evolution for Single Clients------------------------------------------
+\section{Single Flow Behavior}
+\label{sec:performance:single_flow}
+An ideal CCP datapath would produce algorithm implementations that behave exactly as if these algorithms had been implemented natively on the datapath.
+We examine congestion window evolution as well as throughput and delay achieved for single clients running QUIC Reno or CCP Reno, and QUIC Cubic or CCP Cubic, on various emulated network conditions.
+We also discuss BBR, but omit congestion window evolution graphs while discussing BBR.
+BBR only uses congestion windows to provide a cap on the sending rate; the algorithm dynamics depend heavily on how the pacing rate is set.
+The experiments cover fixed link, cellular link, and lossy link settings.
+Each network is emulated with the following parameters:
 \begin{itemize}
-    \item 12, 24, 48, 60, 96 MBPS uplink and downlink throughput
-    \item 20 ms RTT
-    \item 1 BDP of buffering, droptail queue
+    \item One way propagation delay of either 10 ms or 50 ms (DelayShell)
+    \item Link trace that either models a constant bandwidth, or a cellular trace \footnote{We use the Verizon LTE short downlink trace provided with the Mahimahi release.}
+    \item Droptail buffer (only for cellular and fixed links):
+        \begin{itemize}
+            \item Fixed link: 1 BDP of buffering for TCP Cubic and Reno, and 2 BDPs of buffering for BBR
+            \item Cellular link: 100 packets of buffering (for all three algorithms)
+        \end{itemize}
+    \item Deterministic losses: To test lossy links, we add a shell that drops packets at a rate of \%.01. The default loss shell in Mahimahi drops packets randomly; to observe how the QUIC and CCP implementations behave in reaction to the exactly same scenario, we modify this shell perform \textit{determinstic} drops instead. To focus on these determinstic drops and avoid congestive loss, we also emulate infinite buffers.
 \end{itemize}
-By default, for TCP, QUIC emulates two connections rather than one; the cubic congestion controller in QUIC is by default a variant of mulTCP.
-QUIC is useful for video playback; audio and video streams are sent separately over two streams in a QUIC connection.
-In terms of congestion window evolution, this results in a more aggressive backoff upon seeing a loss - typically, Reno or Cubic implementations cut the window by half after a loss.
-QUIC, by default, when emulating two connections, would cut the window by approximately .85.
-We modify QUIC to emulate one connection, so it cuts the window by half; we include this implementation in our comparison for fairness.
-We will refer to this QUIC implementation as QUIC-1.
 
-\subsection*{Fidelity Discussion}
-Figure~\ref{fig:cwndreno} and Figure~\ref{fig:cwndcubic} compare the congestion window of Reno and Cubic respectively.
-We observe that the QUIC-1 and the CCP implementations behave almost exactly the same for the emulation scenarios tested.
-The reason the unmodified QUIC implementation has a higher sawtooth pattern is due to the more agressive cutback on losses.
+\subsection{TCP Reno and TCP Cubic}
+\label{sec:performance:single_flow:cubic-reno}
+\input{\home/imagetex/performance/reno.tex}
+\input{\home/imagetex/performance/cubic.tex}
+\input{\home/imagetex/performance/cubic_reno-mmgraph.tex}
+TCP Reno and Cubic rely on packet loss as a signal for congestion.
+Reno increases the congestion window linearly, by approximately one packet per RTT, while Cubic uses a cubic function to control congestion window increase.
+On observing a packet loss, which may or may not have been caused by congestion, a Reno or Cubic sender would reduce the congestion window, usually by 1/2.
+In the case of a single fixed link with a droptail queue, a sender should see a packet loss approximately when the congestion window hits the sum of the bandwidth delay product and buffersize.
 
-\par For cubic, we observe that the congestion window evolution is extremely different; QUIC's cubic looks like a sawtooth.
-However, CCP cubic definitely exhibits cubic-function like behavior.
+QUIC's implementation of Reno and Cubic includes two notable differences that would make the behavior diverge from a normal implementation of either algorithm.
+QUIC, by default, implements a variation on mulTCP in its default TCP congestion control implementation, causing it to emulate two connections rather for a single real connection.
+QUIC is useful for video playback, so audio and video streams are sent separately over two streams in a QUIC connection.
+It also uses a different backoff factor: 0.7, instead of 0.5.
+This results in a different window reduction on losses - instead of cutting the window by half on loss, QUIC cuts the window approximately by .85.\footnote{The backoff factor in QUIC is calculated by the following equation: $$\frac{\textrm{num\_connections} - 1 + \textrm{backoff}} {2}$$}
+In addition, QUIC uses an alternate version of slow start, called Hybrid Slow Start.
+Hybrid Slow Start uses increasing delay as a signal to leave slow start early.
+As QUIC behaves more aggressively, we modify the CCP implementation of Reno and Cubic to use .85 to reduce the congestion window after seeing a loss, in order to provide a fair evaluation.
 
-%-------------------------------------------------------------------------------------------------------
-%-----------------------------------------PAGE LOAD TIMES-----------------------------------------------
-\section{Page Load Times}
-Table~\ref{tab:plt} summarizes, for various network conditions, the time it takes for the server to transfer files of various sizes, as well as the average throughput and delay of the connection
+Figures~\ref{fig:reno-cwnd} and ~\ref{fig:cubic-cwnd} show the congestion window evolution of Reno and Cubic over a six emulated scenarios, and Figure~\ref{fig:cubic-reno-mmgraph} shows the throughput and queuing delay achieved for some of the fixed link scenarios.
+For Reno, the congestion window evolution matches almost perfectly for the lower bandwidth and delay cases in Figures~\ref{fig:reno-cwnd:a} and ~\ref{fig:reno-cwnd:b}.
+As the BDP of the network increases, for the 24 Mbps or 48 Mbps case with a 100 ms RTT in Figures~\ref{fig:reno-cwnd:c} and ~\ref{fig:reno-cwnd:d}, both QUIC and CCP Reno take longer to exit slow start; this might be related to the performance limits of the QUIC server.
+Figure~\ref{fig:reno-mmgraph-ccp} shows that it takes the sender 2 seconds in the 48 Mbps case to fully utilize the link.
+In the lossy and cellular networks, shown by Figures~\ref{fig:reno-cwnd:e} and ~\ref{fig:reno-cwnd:f}, QUIC Reno exits slow start at a ``safer'' point and keeps the congestion window lower - while CCP keeps a high congestion window and does not exhibit clear Reno-like behavior.
+The CCP Cubic implementation behaves more normally in terms of slow start, in the scenarios shown.
+The differences in the Cubic results may come from implementation choices in QUIC; the CCP Cubic evolution shows more of a cubic increase than QUIC.
+In Section~\ref{sec:algorithms:hss}, we discuss implementing Hybrid Slow Start inside CCP and show that this implementation more faithfully emulates QUIC's TCP Reno and TCP Cubic.
 
-%-------------------------------------------------------------------------------------------------------
-%-----------------------------------------NUMBER OF CONNECTION-------------------------------------------
-\section{Number of Connections}
-\dr{Figure out an experiment to do here}
+\subsection{BBR}
+\label{sec:performance:single_flow:bbr}
+\input{\home/imagetex/performance/bbr.tex}
+BBR~\cite{bbrcode, bbr}, introduced by Google in 2016, is an alternate to loss based congestion control.
+A BBR sender estimates the rate of packets delivered to the receiver, and sets its sending rate to the maximum delivered rate (over a sliding time window), which is believed to be the rate of the bottleneck link between the sender and the receiver.
+To determine whether a connection can send more than its current rate estimate, it probes the link for additional bandwidth by temporarily increasing its rate by a factor  of 1.25.
+In order to drain the queue that may have been created in response to the rate increase, it then reduces its rate to 0.75 of the rate estimate, before sending at its new estimate bottleneck rate estimate.
+On a fixed link, it would ramp up to the correct bandwidth and remain there for the rest of the connection.
+The BBR sender also drains the queues (by reducing the congestion window to 4) periodically, in order to get a new accurate measurement of the \ct{minrtt} of the link.
+Figure~\ref{fig:bbr-mmgraph} shows that on a fixed link (12 Mbps), both BBR implementations drain the queue about every 10 seconds to redetermine the minrtt.
+In the steady state, both sustain about 12 Mbps.
+Note that the CCP implementation of BBR\footnote{Our BBR implementation is located at: \url{github.com/ccp-project/bbr}.} only includes the \ct{PROBE\_BW} and \ct{PROBE\_RTT} phases.
+It remains future work to implement the \ct{STARTUP} and \ct{DRAIN} phases, as well as the special policing detection the full BBR implementation includes.
+The CCP QUIC implementation of BBR experiences similar delays, but does not match QUIC BBR on startup.
+Investigating the startup behavior remains future work.
+
+\subsection{Summary}
+\input{\home/imagetex/performance/single_flow_results.tex}
+Table~\ref{tab:single_flow_results} summarizes the fidelity results for comparing single flows of Reno, Cubic and BBR between their CCP and native QUIC versions.
+The utilized throughput and queueing delay in each case is measured via Mahimahi logs.
+
+
+%--------------------------------------------Congestion Window Evolution for Single Clients----------------------------------------
+%--------------------------------------------Page Load Times------------------------------------------------
+\section{Request Completion Times}
+\label{sec:performance:plt}
+\input{\home/imagetex/performance/plt.tex}
+QUIC is typically used to serve data over HTTP - a natural metric is to benchmark how fast various congestion control algorithms can transfer various files from the client to a server.
+Figure~\ref{fig:plt-graph} summarizes file transfer speed in Cubic, Reno and BBR with and without CCP across cellular, fixed and lossy link cases.
+For the fixed link case, we run each algorithm on a 48 MBPS link with a 10 ms one way propagation delay; the lossy shell experiments add deterministic drops at the rate of .01\%.
+For the cellular link case, we use the Verizon LTE trace used previously in Section~\ref{sec:performance:single_flow}.
+CCP versions of algorithms are slightly slower at completing the file transfer requests.
+%--------------------------------------------Page Load Times------------------------------------------------
+
+%-------------------------------------------Behavior of Multiple Flows------------------------------------------------
+\section{Multiple Flow Behavior}
+\label{sec:performance:multiple_flows}
+\input{\home/imagetex/performance/mulflows.tex}
+Two TCP Cubic or Reno flows should share a link fairly and each get about half the bandwidth of the link.
+This section evaluates whether the CCP version of Cubic on QUIC behaves similarly to native QUIC with respect to the behavior of multiple cubic flows.
+Figure~\ref{fig:cubic-mulflows} reveals that two CCP QUIC flows and 2 QUIC flows share the link equally.
+At three flows, QUIC continues to share the link equally, while the performance degrades for two out of the three CCP flows.
+This may be related to the performance degradation seen for multiple clients seen on localhost for CCP QUIC, discussed in Section~\ref{sec:performance:limits}.
+Note that this experiment only shows one run; when multiple CCP flows are involved, the variation is extremely high.
+
+%-------------------------------------------Discussion------------------------------------------------
+\section{Discussion}
+\label{sec:performance:discussion}
+These results reveal that CCP faithfully implements congestion control for Reno, Cubic and BBR over QUIC, with a slight overhead in terms of performance.
+While the congestion window graphs show that CCP Cubic and Reno implementations do not match exactly with their native QUIC counterparts, we believe that these differences are due to modifications made to the TCP algorithms inside QUIC.
+The different implementations of slow start between CCP and QUIC led to some of the differences in the various emulated networks, especially in the cellular cases.
+Section~\ref{sec:algorithms:hss} discusses implementing Hybrid Slow Start in CCP to evaluate whether the CCP API provides as much flexibility as the QUIC pluggable congestion control interface and if the fidelity results improve.
+
+Future work includes a more throrough investigation of the scalability results seen by CCP QUIC; since the QUIC toy server itself is limited in performance, it is difficult to isolate the performance overhead of CCP.
+Ideally, in the future, we can even implement CCP for high performing QUIC server.
+
+%-------------------------------------------Discussion------------------------------------------------
+
+

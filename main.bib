@@ -1,3 +1,10 @@
+@inproceedings{pantheon,
+  title="{Pantheon: The Training Ground for Internet Congestion-Control research}",
+  author="Yan, Francis Y and Ma, Jestin and Hill, Greg and Raghavan, Deepti and Wahby, Riad S and Levis, Philip and Winstein, Keith",
+  booktitle = {USENIX ATC},
+  year = 2018, 
+}
+
 @inproceedings{swan,
     author = {Hong, Chi-Yao and Kandula, Srikanth and Mahajan, Ratul and Zhang, Ming and Gill, Vijay and Nanduri, Mohan and Wattenhofer, Roger},
     title = {{{A}chieving {H}igh {U}tilization with {S}oftware-driven {W}AN}},
@@ -422,11 +429,25 @@ howpublished={\url{https://github.com/ngsrinivas/linux-fork/commit/a84f0a6db796a
  year={2017},
 }
 
-@inproceedings{pcc,
+@inproceedings{prr,
 title = {{Proportional Rate Reduction for TCP}},
 author  = {Nandita Dukkipati and Matt Mathis and Yuchung Cheng and Monia Ghobadi},
 booktitle = {{SIGCOMM}},
 year  = {2011},
+}
+
+@inproceedings{pcc,
+  title="{PCC: Re-architecting Congestion Control for Consistent High Performance}",
+  author="Dong, Mo and Li, Qingxi and Zarchy, Doron and Godfrey, Philip Brighten and Schapira, Michael",
+  booktitle={NSDI},
+  year={2015}
+}
+
+@inproceedings{pcc-vivace,
+  title="{PCC Vivace: Online-Learning Congestion Control}",
+  author={Dong, Mo and Meng, Tong and Zarchy, D and Arslan, E and Gilad, Y and Godfrey, B and Schapira, M},
+  booktitle={NSDI},
+  year={2018},
 }
 
 @article{bbr,
@@ -1069,9 +1090,15 @@ year = {2011},
 }
 
 @misc {dpdk,
-    key = "dpdk",
+key="dpdk",
     title = {{DPDK}},
-    howpublished = {\url{http://dpdk.org/}},
+    howpublished = "\url{http://dpdk.org/}",
+}
+
+@misc {rustfft,
+key="rustfft",
+    title = {{rustfft}},
+    howpublished = "\url{https://crates.io/crates/rustfft}",
 }
 
 @inproceedings{marple,
@@ -1252,7 +1279,7 @@ author = {{Chelsio Communications}},
 }
 
 @book{webrtc,
-  title="{WebRTC: APIs and RTCWEB protocols of the HTML5 real-time web}",
+  title={{WebRTC: APIs and RTCWEB Protocols of the HTML5 Real-time Web}},
   author="Johnston, Alan B. and Burnett, Daniel C.",
   year={2012},
   publisher={Digital Codex LLC}
@@ -1359,6 +1386,50 @@ author = {{Chelsio Communications}},
 
 @misc{tcpbpf,
 author = {Brakmo, Lawrence},
-title = {"TCP-BPF: Programmatically tuning TCP behavior through BPF"},
-howpublished = {"https://www.netdevconf.org/2.2/papers/brakmo-tcpbpf-talk.pdf"}
+title = {{TCP-BPF: Programmatically tuning TCP behavior through BPF}},
+howpublished = {https://www.netdevconf.org/2.2/papers/brakmo-tcpbpf-talk.pdf}
+}
+
+@inproceedings{nacl,
+title	= {Native Client: A Sandbox for Portable, Untrusted x86 Native Code},
+author	= {Bennet Yee and David Sehr and Greg Dardyk and Brad Chen and Robert Muth and Tavis Ormandy and Shiki Okasaka and Neha Narula and Nicholas Fullagar},
+year	= {2009},
+booktitle	= {IEEE Symposium on Security and Privacy (Oakland'09)},
+}
+
+@inproceedings{bgi,
+ author = {Castro, Miguel and Costa, Manuel and Martin, Jean-Philippe and Peinado, Marcus and Akritidis, Periklis and Donnelly, Austin and Barham, Paul and Black, Richard},
+ title = {Fast Byte-granularity Software Fault Isolation},
+ booktitle = {Proceedings of the ACM SIGOPS 22Nd Symposium on Operating Systems Principles},
+ 
+ year = {2009},
+} 
+
+@inproceedings{sfi,
+ author = {Wahbe, Robert and Lucco, Steven and Anderson, Thomas E. and Graham, Susan L.},
+ title = {Efficient Software-based Fault Isolation},
+ booktitle = {Proceedings of the Fourteenth ACM Symposium on Operating Systems Principles},
+ year = {1993},
+} 
+
+@inproceedings{xfi,
+ author = {Erlingsson, \'{U}lfar and Abadi, Mart\'{\i}n and Vrable, Michael and Budiu, Mihai and Necula, George C.},
+ title = {XFI: Software Guards for System Address Spaces},
+ booktitle = {Proceedings of the 7th Symposium on Operating Systems Design and Implementation},
+ year = {2006},
+} 
+
+
+@inproceedings{janus,
+author = {Thomas, I and Goldberg, Ian and Wagner, David and Thomas, Randi and Brewer, Eric},
+booktitle = {Proceedings of the 6th conference on USENIX Security Symposium},
+year = {2001},
+title = {A Secure Environment for Untrusted Helper Applications (Confining the Wily Hacker)}
+}
+
+@INPROCEEDINGS{systrace,
+    author = {Niels Provos},
+    title = {Improving Host Security with System Call Policies},
+    booktitle = {Proceedings of the 12th Usenix Security Symposium},
+    year = {2002},
 }

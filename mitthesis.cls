@@ -410,8 +410,7 @@ reserved.\par\permission}}
 %% \copyrightnotice{stuff} to copyright to someone else, or
 %% \copyrightnoticetext{stuff} to specify the exact text of the copyright
 %% notice.
-\ifodd\vithesis \copyrightnoticetext{\copyright\ \@author,
-\uppercase\expandafter{\romannumeral\@degreeyear}.  All rights reserved.\par\permission}
+\ifodd\vithesis \copyrightnoticetext{\copyright\ \@degreeyear\ \@author.  All rights reserved.\par\permission}
 %% or just
 %%\@degreeyear}}
 \typeout{Copyright given to author,
@@ -456,7 +455,7 @@ by\par
 \@prevdegrees
 \par
 \choosecase{Submitted to the} \choosecase{\@department} \\
-\choosecase{in partial fulfillment of the requirements for the}
+\choosecase{in Partial Fulfillment of the Requirements for the}
 \choosecase{\@degreeword}
 \choosecase{of}
 \par
@@ -522,7 +521,7 @@ requirements for the \@degreeword\ of \\
 \def\Mit{Massachusetts Institute of Technology}
 
 \def\permission{\par\noindent{\centering
-   The author hereby grants to MIT permission to reproduce and to
+   The author hereby grants to M.I.T. permission to reproduce and to
    distribute publicly paper and electronic copies of this thesis
    document in whole or in part in any medium now known or hereafter
    created.}\par}
