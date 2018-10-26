@@ -1,8 +1,9 @@
 \chapter{Implementation}
 
 \section{Writing Algorithms in CCP}
+\label{sec:ccp}
 %
-\begin{figure}[h]
+\begin{figure}[p]
 \centering
     \includegraphics[width=\columnwidth]{img/ccp_design_sigcomm}
     \caption{Congestion control algorithms in CCP are distinct from the application and datapath.
@@ -28,8 +29,39 @@ which contains the bulk of the logic of the congestion control algorithm.
 The \ct{onReport()} function computes and installs the flow's congestion
 window or sending rate using the signals from the datapath report.
 It may also replace the datapath program entirely with different logic.
+\label{s:ccp:datapath_programs}
+CCP's datapath programs are written in a simple domain specific language.
+Conceptually, datapath programs contain state initializations, \ie a \ct{def}
+clause, and event specifications, \ie a series of \ct{when} clauses.
+The datapath checks event conditions on every incoming packet and timeout event.
+If an event condition evaluates to true, the body of the \ct{when} clause is executed as the corresponding
+action.
+These programs exist in order to provide a per ACK execution environment, where algorithms can define and update variables per ACK and perform \textit{control actions}, in response to the values of these variables.
+
+Figure~\ref{lst:design:simple_datapath_prog} shows a program that counts the cumulative number of packets acknowledged and lost and reports these counters immediately upon a loss.
 %
-\label{sec:ccp}
+\begin{figure}[t]
+{\footnotesize
+\begin{minted}[xleftmargin=\parindent,linenos]{lisp}
+(def (Report (volatile acked 0) (volatile lost 0)))
+(when true
+  (:= Report.acked (+ Report.acked Ack.bytes_acked))
+  (:= Report.lost  (+ Report.lost  Ack.lost_pkts_sample))
+  (fallthrough))
+(when (> Report.lost 0) (report))
+\end{minted}
+\caption{A simple datapath program to count bytes acked and report on losses.} \label{lst:design:simple_datapath_prog}
+}
+\end{figure}
+%
+The first statement of the program allows users to define custom variables.
+The ``Report'' block signifies that these variables should be included in the report message sent to the CCP agent.
+The \ct{volatile} marker means that these variables should be reset to their initial values, 0, after every report to the CCP agent.
+
+Following the \texttt{def} block, \textit{fold functions} provide custom summaries over primitive congestion signals.
+Datapath programs have read access to these \textit{primitive congestion signals} (prefixed with ``\ct{Ack.}'' or ``\ct{Flow.}'' to specify their measurement period), which are exposed by the datapath on every incoming packet. Such signals include the round trip delay sample, the number of bytes the datapath believes have been dropped by the network, and the delivery rates of packets. Table ~\ref{tab:api} enumerates the primitive congestion signals we support.
+Users can write simple mathematical summaries over these primitive signals, as shown in Lines 3-4 of Figure~\ref{lst:design:simple_datapath_prog}.
+%
 \begin{table}
     \centering
     \footnotesize
@@ -79,38 +111,6 @@ It may also replace the datapath program entirely with different logic.
 \end{table}
 \subsection{Datapath Program Abstractions}
 %
-\label{s:ccp:datapath_programs}
-CCP's datapath programs are written in a simple domain specific language.
-Conceptually, datapath programs contain state initializations, \ie a \ct{def}
-clause, and event specifications, \ie a series of \ct{when} clauses.
-The datapath checks event conditions on every incoming packet and timeout event.
-If an event condition evaluates to true, the body of the \ct{when} clause is executed as the corresponding
-action.
-These programs exist in order to provide a per ACK execution environment, where algorithms can define and update variables per ACK and perform \textit{control actions}, in response to the values of these variables.
-
-Figure~\ref{lst:design:simple_datapath_prog} shows a program that counts the cumulative number of packets acknowledged and lost and reports these counters immediately upon a loss.
-%
-\begin{figure}[t]
-{\footnotesize
-\begin{minted}[xleftmargin=\parindent,linenos]{lisp}
-(def (Report (volatile acked 0) (volatile lost 0)))
-(when true
-  (:= Report.acked (+ Report.acked Ack.bytes_acked))
-  (:= Report.lost  (+ Report.lost  Ack.lost_pkts_sample))
-  (fallthrough))
-(when (> Report.lost 0) (report))
-\end{minted}
-\caption{A simple datapath program to count bytes acked and report on losses.} \label{lst:design:simple_datapath_prog}
-}
-\end{figure}
-%
-The first statement of the program allows users to define custom variables.
-The ``Report'' block signifies that these variables should be included in the report message sent to the CCP agent.
-The \ct{volatile} marker means that these variables should be reset to their initial values, 0, after every report to the CCP agent.
-
-Following the \texttt{def} block, \textit{fold functions} provide custom summaries over primitive congestion signals.
-Datapath programs have read access to these \textit{primitive congestion signals} (prefixed with ``\ct{Ack.}'' or ``\ct{Flow.}'' to specify their measurement period), which are exposed by the datapath on every incoming packet. Such signals include the round trip delay sample, the number of bytes the datapath believes have been dropped by the network, and the delivery rates of packets. Table ~\ref{tab:api} enumerates the primitive congestion signals we support.
-Users can write simple mathematical summaries over these primitive signals, as shown in Lines 3-4 of Figure~\ref{lst:design:simple_datapath_prog}.
 
 Finally, algorithms can perform control actions in response to conditions defined by the fold function variables, \eg updating a rate or cwnd or reporting the user defined variables to the CCP agent.
 As shown in Figure~\ref{lst:design:simple_datapath_prog}, the program defines a series of \ct{when} clauses, and performs the following block only if the condition was evaluated to true.
@@ -274,7 +274,7 @@ On one extreme, algorithms may be implemented almost entirely in CCP, using the 
 On the other extreme, CCP algorithms may merely specify transitions between in-datapath fold functions implementing the primary control logic of the algorithm.
 Ultimately, users are able to choose the algorithm implementation best suited to their congestion control logic and application needs.
 
-\begin{figure}[h]
+\begin{figure}[!h]
 {\footnotesize
 \begin{minted}{rust}
 fn create(...) {
@@ -288,3 +288,13 @@ fn onReport(...) { /* exit slow start */ }
 }
 \caption{A within-fold implementation of slow start. Note that CCP algorithm code is not invoked at all until the connection experiences its first loss.} \label{lst:ccp:ssfold}
 \end{figure}
+
+\subsection{Differences in Algorithm Implementations}
+\label{s:ccp:deficit}
+
+Because CCP algorithms operate asynchronously, the semantics of their implementations can vary from traditional datapath-native ones. 
+One example of this difference is the implementation of traditional congestion avoidance-style algorithms (\ie most algorithms proposed thus far), which consist of congestion window increase and decrease rules upon incoming acknowledgements and indications of congestion -- usually, packet loss. 
+These algorithms must take care to only invoke their congestion window reduction logic \emph{once} per window of packets because it is unfair to perform multiple reductions when multiple packets in the same window are lost: after the first loss in the window, the algorithm has no opportunity to reduce its congestion window to prevent subsequent losses within the same window. 
+
+However, unlike datapath-native algorithms, CCP algorithms do not know explicitly which packets belong to the same window. Therefore, they must infer from available primitives when it is appropriate to perform further window reductions. Intuitively, a single window reduction period lasts from the first indication of a loss until all the packets that were inflight at that time are acknowledged. 
+Therefore, CCP algorithms can count the number of out-of-order packets received along with a notification of loss, and wait until the cumulative acknowledgement covers those packets. Once this condition is met, the algorithm can resume performing congestion window reductions on subsequent loss reports.
